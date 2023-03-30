@@ -21,10 +21,7 @@ func main() {
 				Name:    "composer",
 				Aliases: []string{"c"},
 				Usage:   "runs as ddev/lando composer ...",
-				Action: func(cCtx *cli.Context) error {
-					fmt.Println("Run composer: ", cCtx.Args().First())
-					return nil
-				},
+				Action:  cmdComposer,
 			},
 			{
 				Name:    "drush",
@@ -57,25 +54,7 @@ func main() {
 		Authors: []*cli.Author{
 			{Name: "Abhisek Mazumdar (abhisekmazumdar)"},
 		},
-		Action: func(cCtx *cli.Context) error {
-
-			strArgs := ""
-
-			strArgs = argsToString(cCtx.Args())
-			fmt.Println("Checking which dev tool configuration files are present...")
-
-			devTool := ""
-			devTool = checkForDevTool()
-
-			if devTool == "ddev" || devTool == "lando" {
-				runner.Run(devTool, strArgs)
-			} else {
-				fmt.Println("You 🫵 spoiled all the fun, Try Again!!.")
-				os.Exit(1)
-			}
-
-			return nil
-		},
+		Action: mainAction,
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -83,13 +62,57 @@ func main() {
 	}
 }
 
+func mainAction(cCtx *cli.Context) error {
+
+	devTool, strArgs := helper(cCtx)
+	runner.Run(devTool, strArgs)
+
+	return nil
+
+}
+
+// Handle any command which has composer as first argument.
+func cmdComposer(cCtx *cli.Context) error {
+
+	devTool, strArgs := helper(cCtx)
+	runner.Run(devTool, "composer "+strArgs)
+
+	return nil
+
+}
+
+// Helper for all commands.
+func helper(cCtx *cli.Context) (string, string) {
+
+	strArgs := ""
+	strArgs = argsToString(cCtx.Args())
+
+	fmt.Println("Checking which dev tool configuration files are present...")
+
+	devTool := ""
+	devTool = checkForDevTool()
+
+	return devTool, strArgs
+}
+
+// Check for dev tool's(ddev or lando) config files are present.
 func checkForDevTool() string {
+
 	reader := bufio.NewReader(os.Stdin)
+
 	if _, err := os.Stat("./.ddev"); !os.IsNotExist(err) {
+
 		if _, err := os.Stat("./.lando.yml"); !os.IsNotExist(err) {
+
 			fmt.Print("Both .lando.yml and .ddev directories exist.\nWhich one would you like to use? Type 'lando' or 'ddev': ")
+
 			option, _ := reader.ReadString('\n')
 			option = strings.ToLower(strings.TrimSpace(option))
+
+			if option != "ddev" && option != "lando" {
+				fmt.Println("You 🫵  spoiled all the fun.\nInvalid input, Try Again!!")
+				os.Exit(1)
+			}
 			return option
 		} else {
 			return "ddev"
@@ -103,6 +126,7 @@ func checkForDevTool() string {
 	return ""
 }
 
+// Convert the cli.Args into string arguments.
 func argsToString(args cli.Args) string {
 	var str strings.Builder
 	for i := 0; i < args.Len(); i++ {
