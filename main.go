@@ -27,8 +27,13 @@ func main() {
 				Name:    "drush",
 				Aliases: []string{"d"},
 				Usage:   "runs as ddev/lando drush ...",
+				Action:  cmdDrush,
+			},
+			{
+				Name:  "create-project",
+				Usage: "runs as ddev/lando composer create-project ...",
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("Run drush: ", cCtx.Args().First())
+					fmt.Println("Run composer require: ", cCtx.Args().First())
 					return nil
 				},
 			},
@@ -76,6 +81,16 @@ func cmdComposer(cCtx *cli.Context) error {
 
 	devTool, strArgs := helper(cCtx)
 	runner.Run(devTool, "composer "+strArgs)
+
+	return nil
+
+}
+
+// Handle any drush which has drush as first argument.
+func cmdDrush(cCtx *cli.Context) error {
+
+	devTool, strArgs := helper(cCtx)
+	runner.Run(devTool, "drush "+strArgs)
 
 	return nil
 
