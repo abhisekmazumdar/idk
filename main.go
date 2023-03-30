@@ -67,9 +67,36 @@ func main() {
 			{
 				Name:    "site-install",
 				Aliases: []string{"si"},
-				Usage:   "runs as ddev/lando drush site-install ...",
+				Usage:   "runs as ddev/lando drush site-install profile_name",
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("Run drush site-install: ", cCtx.Args().First())
+					cmdDrushBased("site-install ", cCtx)
+					return nil
+				},
+			},
+			{
+				Name:    "pm:enable",
+				Aliases: []string{"en"},
+				Usage:   "runs as ddev/lando drush pm-enable module_name",
+				Action: func(cCtx *cli.Context) error {
+					cmdDrushBased("pm:enable ", cCtx)
+					return nil
+				},
+			},
+			{
+				Name:    "pm:uninstall",
+				Aliases: []string{"pmu"},
+				Usage:   "runs as ddev/lando drush pm-uninstall module_name",
+				Action: func(cCtx *cli.Context) error {
+					cmdDrushBased("pm:uninstall ", cCtx)
+					return nil
+				},
+			},
+			{
+				Name:    "cache:rebuild",
+				Aliases: []string{"cr"},
+				Usage:   "runs as ddev/lando drush cache:rebuild",
+				Action: func(cCtx *cli.Context) error {
+					cmdDrushBased("cache:rebuild", cCtx)
 					return nil
 				},
 			},
@@ -85,6 +112,7 @@ func main() {
 	}
 }
 
+// Handle when user is not very lazy.
 func mainAction(cCtx *cli.Context) error {
 
 	devTool, strArgs := helper(cCtx)
@@ -114,7 +142,7 @@ func cmdDrush(cCtx *cli.Context) error {
 
 }
 
-// Handle any command which has is a composer's as second argument.
+// Handle any command which has a composer's second argument and idk sub-command.
 func cmdComposerBased(subCmd string, cCtx *cli.Context) error {
 
 	devTool, strArgs := helper(cCtx)
@@ -123,7 +151,17 @@ func cmdComposerBased(subCmd string, cCtx *cli.Context) error {
 	runner.Run(devTool, cmd)
 
 	return nil
+}
 
+// Handle any command which has a drush's second argument and idk sub-command.
+func cmdDrushBased(subCmd string, cCtx *cli.Context) error {
+
+	devTool, strArgs := helper(cCtx)
+	cmd := "drush " + subCmd + strArgs
+
+	runner.Run(devTool, cmd)
+
+	return nil
 }
 
 // Helper for all commands.
