@@ -33,7 +33,16 @@ func main() {
 				Name:  "create-project",
 				Usage: "runs as ddev/lando composer create-project ...",
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("Run composer require: ", cCtx.Args().First())
+					cmdComposerBased("create-project ", cCtx)
+					return nil
+				},
+			},
+			{
+				Name:    "install",
+				Aliases: []string{"i"},
+				Usage:   "runs as ddev/lando composer install ...",
+				Action: func(cCtx *cli.Context) error {
+					cmdComposerBased("install ", cCtx)
 					return nil
 				},
 			},
@@ -42,7 +51,16 @@ func main() {
 				Aliases: []string{"r"},
 				Usage:   "runs as ddev/lando composer require ...",
 				Action: func(cCtx *cli.Context) error {
-					fmt.Println("Run composer require: ", cCtx.Args().First())
+					cmdComposerBased("require ", cCtx)
+					return nil
+				},
+			},
+			{
+				Name:    "update",
+				Aliases: []string{"u"},
+				Usage:   "runs as ddev/lando composer update ...",
+				Action: func(cCtx *cli.Context) error {
+					cmdComposerBased("update ", cCtx)
 					return nil
 				},
 			},
@@ -86,11 +104,23 @@ func cmdComposer(cCtx *cli.Context) error {
 
 }
 
-// Handle any drush which has drush as first argument.
+// Handle any command which has drush as first argument.
 func cmdDrush(cCtx *cli.Context) error {
 
 	devTool, strArgs := helper(cCtx)
 	runner.Run(devTool, "drush "+strArgs)
+
+	return nil
+
+}
+
+// Handle any command which has is a composer's as second argument.
+func cmdComposerBased(subCmd string, cCtx *cli.Context) error {
+
+	devTool, strArgs := helper(cCtx)
+	cmd := "composer " + subCmd + strArgs
+
+	runner.Run(devTool, cmd)
 
 	return nil
 
