@@ -7,15 +7,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/abhisekmazumdar/idk/ddev"
-	"github.com/abhisekmazumdar/idk/lando"
+	"github.com/abhisekmazumdar/idk/runner"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
 	app := &cli.App{
 		Name:        "idk",
-		Usage:       "replace idk with lando OR ddev followed by the arguments & flags",
+		Usage:       "replace idk with dev tool followed by the arguments & flags",
 		Description: "idk - Helper CLI that knows for you and runs command as lando OR ddev.",
 		Commands: []*cli.Command{
 			{
@@ -63,17 +62,14 @@ func main() {
 			strArgs := ""
 
 			strArgs = argsToString(cCtx.Args())
-			fmt.Println("Checking which development tool configuration files are present...")
+			fmt.Println("Checking which dev tool configuration files are present...")
 
-			localConfig := ""
-			localConfig = checkLocalConfig()
+			devTool := ""
+			devTool = checkForDevTool()
 
-			switch localConfig {
-			case "lando":
-				lando.Run(strArgs)
-			case "ddev":
-				ddev.Run(strArgs)
-			default:
+			if devTool == "ddev" || devTool == "lando" {
+				runner.Run(devTool, strArgs)
+			} else {
 				fmt.Println("You 🫵 spoiled all the fun, Try Again!!.")
 				os.Exit(1)
 			}
@@ -87,7 +83,7 @@ func main() {
 	}
 }
 
-func checkLocalConfig() string {
+func checkForDevTool() string {
 	reader := bufio.NewReader(os.Stdin)
 	if _, err := os.Stat("./.ddev"); !os.IsNotExist(err) {
 		if _, err := os.Stat("./.lando.yml"); !os.IsNotExist(err) {
@@ -101,7 +97,7 @@ func checkLocalConfig() string {
 	} else if _, err := os.Stat("./.lando.yml"); !os.IsNotExist(err) {
 		return "lando"
 	} else {
-		fmt.Println("No ddev or lando configuration files found.")
+		fmt.Println("No ddev or lando configuration files found 🙁")
 		os.Exit(1)
 	}
 	return ""
