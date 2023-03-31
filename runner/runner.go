@@ -4,15 +4,19 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 // Run command as lando OR ddev.
-func Run(devTool string, args string) {
+func Run(devTool string, args ...string) {
 
-	fmt.Println("Running: " + devTool + " " + args)
+	msg := "Running: " + devTool + " "
+	for i := 0; i < len(args); i++ {
+		msg += args[i] + " "
+	}
+	fmt.Println(msg)
+	fmt.Println()
 
-	command := exec.Command(devTool, strings.TrimSpace(args))
+	command := exec.Command(devTool, args...)
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
 	err := command.Run()

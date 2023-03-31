@@ -42,7 +42,7 @@ func main() {
 				Aliases: []string{"i"},
 				Usage:   "runs as ddev/lando composer install ...",
 				Action: func(cCtx *cli.Context) error {
-					cmdComposerBased("install ", cCtx)
+					cmdComposerBased("install", cCtx)
 					return nil
 				},
 			},
@@ -51,7 +51,7 @@ func main() {
 				Aliases: []string{"r"},
 				Usage:   "runs as ddev/lando composer require ...",
 				Action: func(cCtx *cli.Context) error {
-					cmdComposerBased("require ", cCtx)
+					cmdComposerBased("require", cCtx)
 					return nil
 				},
 			},
@@ -60,7 +60,7 @@ func main() {
 				Aliases: []string{"u"},
 				Usage:   "runs as ddev/lando composer update ...",
 				Action: func(cCtx *cli.Context) error {
-					cmdComposerBased("update ", cCtx)
+					cmdComposerBased("update", cCtx)
 					return nil
 				},
 			},
@@ -69,7 +69,7 @@ func main() {
 				Aliases: []string{"si"},
 				Usage:   "runs as ddev/lando drush site-install profile_name",
 				Action: func(cCtx *cli.Context) error {
-					cmdDrushBased("site-install ", cCtx)
+					cmdDrushBased("site-install", cCtx)
 					return nil
 				},
 			},
@@ -78,7 +78,7 @@ func main() {
 				Aliases: []string{"en"},
 				Usage:   "runs as ddev/lando drush pm-enable module_name",
 				Action: func(cCtx *cli.Context) error {
-					cmdDrushBased("pm:enable ", cCtx)
+					cmdDrushBased("pm:enable", cCtx)
 					return nil
 				},
 			},
@@ -87,7 +87,7 @@ func main() {
 				Aliases: []string{"pmu"},
 				Usage:   "runs as ddev/lando drush pm-uninstall module_name",
 				Action: func(cCtx *cli.Context) error {
-					cmdDrushBased("pm:uninstall ", cCtx)
+					cmdDrushBased("pm:uninstall", cCtx)
 					return nil
 				},
 			},
@@ -115,8 +115,8 @@ func main() {
 // Handle when user is not very lazy.
 func mainAction(cCtx *cli.Context) error {
 
-	devTool, strArgs := helper(cCtx)
-	runner.Run(devTool, strArgs)
+	devTool, strArr := helper(cCtx)
+	runner.Run(devTool, strArr...)
 
 	return nil
 
@@ -125,8 +125,9 @@ func mainAction(cCtx *cli.Context) error {
 // Handle any command which has composer as first argument.
 func cmdComposer(cCtx *cli.Context) error {
 
-	devTool, strArgs := helper(cCtx)
-	runner.Run(devTool, "composer "+strArgs)
+	devTool, strArr := helper(cCtx)
+	strArr = append([]string{"composer"}, strArr...)
+	runner.Run(devTool, strArr...)
 
 	return nil
 
@@ -135,8 +136,9 @@ func cmdComposer(cCtx *cli.Context) error {
 // Handle any command which has drush as first argument.
 func cmdDrush(cCtx *cli.Context) error {
 
-	devTool, strArgs := helper(cCtx)
-	runner.Run(devTool, "drush "+strArgs)
+	devTool, strArr := helper(cCtx)
+	strArr = append([]string{"drush"}, strArr...)
+	runner.Run(devTool, strArr...)
 
 	return nil
 
@@ -145,10 +147,9 @@ func cmdDrush(cCtx *cli.Context) error {
 // Handle any command which has a composer's second argument and idk sub-command.
 func cmdComposerBased(subCmd string, cCtx *cli.Context) error {
 
-	devTool, strArgs := helper(cCtx)
-	cmd := "composer " + subCmd + strArgs
-
-	runner.Run(devTool, cmd)
+	devTool, strArr := helper(cCtx)
+	strArr = append([]string{"composer", subCmd}, strArr...)
+	runner.Run(devTool, strArr...)
 
 	return nil
 }
@@ -156,26 +157,30 @@ func cmdComposerBased(subCmd string, cCtx *cli.Context) error {
 // Handle any command which has a drush's second argument and idk sub-command.
 func cmdDrushBased(subCmd string, cCtx *cli.Context) error {
 
-	devTool, strArgs := helper(cCtx)
-	cmd := "drush " + subCmd + strArgs
-
-	runner.Run(devTool, cmd)
+	devTool, strArr := helper(cCtx)
+	strArr = append([]string{"drush", subCmd}, strArr...)
+	runner.Run(devTool, strArr...)
 
 	return nil
 }
 
 // Helper for all commands.
-func helper(cCtx *cli.Context) (string, string) {
+func helper(cCtx *cli.Context) (string, []string) {
 
-	strArgs := ""
-	strArgs = argsToString(cCtx.Args())
+	// Make array of stings for the arguments.
+	args := cCtx.Args()
+	var strArr []string
+	for i := 0; i < args.Len(); i++ {
+		strArr = append(strArr, args.Get(i))
+	}
 
 	fmt.Println("Checking which dev tool configuration files are present...")
+	fmt.Println()
 
 	devTool := ""
 	devTool = checkForDevTool()
 
-	return devTool, strArgs
+	return devTool, strArr
 }
 
 // Check for dev tool's(ddev or lando) config files are present.
@@ -207,14 +212,4 @@ func checkForDevTool() string {
 		os.Exit(1)
 	}
 	return ""
-}
-
-// Convert the cli.Args into string arguments.
-func argsToString(args cli.Args) string {
-	var str strings.Builder
-	for i := 0; i < args.Len(); i++ {
-		str.WriteString(args.Get(i))
-		str.WriteString(" ")
-	}
-	return str.String()
 }
