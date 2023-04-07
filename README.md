@@ -1,5 +1,7 @@
 # I Don't Know ~ A simple CLI that knows for you.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/abhisekmazumdar/idk)](https://goreportcard.com/report/github.com/abhisekmazumdar/idk)
+
 IDK (I Don't Know) is a CLI that simplifies local development with ddev and lando by automatically detecting which one to use for each project. It can also recognize composer and drush commands in a similar manner.
 
 If you are someone who uses `ddev` & `lando` in your day to day local development workflow and you get confused or don't remember which project you used for which, this CLI will know for you.
